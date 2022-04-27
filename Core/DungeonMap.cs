@@ -10,12 +10,16 @@ namespace AscII_Game.Core
 {
     public class DungeonMap : Map
     {
-        public List<Rectangle> Rooms;
+        public List<Rectangle> Rooms { get; set; }
+        public List<Door> Doors { get; set; }
 
         public DungeonMap()
         {
             Rooms = new List<Rectangle>();
+
+            Doors = new List<Door>();
         }
+
 
         public void Draw(RLConsole mapConsole)
         {
@@ -23,6 +27,11 @@ namespace AscII_Game.Core
             foreach(Cell cell in GetAllCells() )
             {
                 SetConsoleSymbolForCell(mapConsole, cell);
+            }
+
+            foreach(Door door in Doors)
+            {
+                door.Draw(mapConsole, this);
             }
         }
 
@@ -73,10 +82,12 @@ namespace AscII_Game.Core
             {
                 SetIsWalkable(actor.X, actor.Y, true);
 
+
                 actor.X = x;
                 actor.Y = y;
 
                 SetIsWalkable(actor.X, actor.Y, false);
+                OpenDoor(actor, x, y);
 
                 if( actor is Player )
                 {
@@ -88,7 +99,7 @@ namespace AscII_Game.Core
         }
         public void SetIsWalkable( int x, int y, bool isWalkable)
         {
-            Cell cell = (Cell)GetCell(x, y);
+            ICell cell = GetCell(x, y);
             SetCellProperties(cell.X, cell.Y, cell.IsTransparent, isWalkable, cell.IsExplored);
         }
 
@@ -97,6 +108,24 @@ namespace AscII_Game.Core
             Game.Player = player;
             SetIsWalkable(player.X, player.Y, false);
             UpdatePlayerFieldOfView();
+        }
+
+        public Door GetDoor( int x, int y)
+        {
+            return Doors.SingleOrDefault( d => d.X == x && d.Y == y );
+        }
+
+        private void OpenDoor(Actor actor, int x, int y)
+        {
+            Door door = GetDoor(x, y);
+            if(door != null && !door.IsOpen)
+            {
+                door.IsOpen = true;
+                var cell = GetCell(x, y);
+                SetCellProperties(x, y, true, cell.IsWalkable, cell.IsExplored);
+
+                Game.MessageLog.Add($"{actor.Name} opened a door");
+            }
         }
     }
 }

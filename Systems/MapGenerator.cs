@@ -1,10 +1,9 @@
-﻿using AscII_Game.Core;
-using RogueSharp;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using RogueSharp;
+using AscII_Game.Core;
+
 
 namespace AscII_Game.Systems
 {
@@ -56,13 +55,13 @@ namespace AscII_Game.Systems
                 }
             }
 
-            foreach (Rectangle room in _map.Rooms )
-            {
-                CreateRoom(room);
-            }
-
             for(int r = 1; r < _map.Rooms.Count; r++)
             {
+                if( r == 0)
+                {
+                    continue;
+                }
+
                 int previousRoomCenterX = _map.Rooms[r - 1].Center.X;
                 int previousRoomCenterY = _map.Rooms[r - 1].Center.Y;
                 int currentRoomCenterX = _map.Rooms[r].Center.X;
@@ -78,6 +77,12 @@ namespace AscII_Game.Systems
                     CreateVerticalTunnel(previousRoomCenterY, currentRoomCenterY, previousRoomCenterX);
                     CreateHorizontalTunnel(previousRoomCenterX, currentRoomCenterX, currentRoomCenterY);
                 }
+            }
+
+            foreach (Rectangle room in _map.Rooms )
+            {
+                CreateRoom(room);
+                CreateDoors(room);
             }
 
             PlacePlayer();
@@ -96,19 +101,6 @@ namespace AscII_Game.Systems
             }
         }
 
-        private void PlacePlayer()
-        {
-            Player player = Game.Player;
-            if (player == null)
-            {
-                player = new Player();
-            }
-
-            player.X = _map.Rooms[0].Center.X;
-            player.Y = _map.Rooms[0].Center.Y;
-
-            _map.AddPlayer(player);
-        }
 
         //Hallways
         private void CreateHorizontalTunnel( int xStart, int xEnd, int yPosition)
@@ -125,6 +117,82 @@ namespace AscII_Game.Systems
             {
                 _map.SetCellProperties(xPostition, y, true, true);
             }
+        }
+
+        //Doors
+        private void CreateDoors(Rectangle room)
+        {
+            int xMin = room.Left;
+            int xMax = room.Right;
+            int yMin = room.Top;
+            int yMax = room.Bottom;
+
+            List<ICell> borderCells = _map.GetCellsAlongLine(xMin, yMin, xMax, yMin).ToList();
+            borderCells.AddRange(_map.GetCellsAlongLine(xMin, yMin, xMin, yMax));
+            borderCells.AddRange(_map.GetCellsAlongLine(xMin, yMax, xMax, yMax));
+            borderCells.AddRange(_map.GetCellsAlongLine(xMax, yMin, xMax, yMax));
+
+            foreach(Cell cell in borderCells)
+            {
+                if(IsPotentialDoor(cell))
+                {
+                    _map.SetCellProperties(cell.X, cell.Y, false, true);
+                    _map.Doors.Add(new Door
+                    {
+                        X = cell.X,
+                        Y = cell.Y,
+                        IsOpen = false
+                    });
+                }    
+            }
+        }
+
+        private bool IsPotentialDoor(Cell cell)
+        {
+            if(!cell.IsWalkable)
+            {
+                return false;
+            }
+
+            Cell right = (Cell)_map.GetCell(cell.X + 1, cell.Y);
+            Cell left = (Cell)_map.GetCell(cell.X - 1, cell.Y);
+            Cell top = (Cell)_map.GetCell(cell.X, cell.Y - 1);
+            Cell bottom = (Cell)_map.GetCell(cell.X, cell.Y + 1);
+
+            if(_map.GetDoor(cell.X, cell.Y) != null ||
+                _map.GetDoor(right.X, right.Y) != null ||
+                _map.GetDoor(left.X, left.Y) != null ||
+                _map.GetDoor(top.X, top.Y) != null || 
+                _map.GetDoor(bottom.X, bottom.Y) != null )
+            {
+                return false;
+            }
+
+            if (right.IsWalkable && left.IsWalkable && !top.IsWalkable && !bottom.IsWalkable)
+            {
+                return true;
+            }
+
+            // This is a good place for a door on the top or bottom of the room
+            if (!right.IsWalkable && !left.IsWalkable && top.IsWalkable && bottom.IsWalkable)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private void PlacePlayer()
+        {
+            Player player = Game.Player;
+            if (player == null)
+            {
+                player = new Player();
+            }
+
+            player.X = _map.Rooms[0].Center.X;
+            player.Y = _map.Rooms[0].Center.Y;
+
+            _map.AddPlayer(player);
         }
     }
 }

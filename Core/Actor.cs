@@ -1,24 +1,20 @@
 ﻿using AscII_Game.Interfaces;
 using RLNET;
 using RogueSharp;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AscII_Game.Core
 {
+    public class Actor : IActor, IDrawable
+        {
         private int _attack;
         private int _attackChance;
         private int _awareness;
-        private int _awarenessDefense;
         private int _defense;
         private int _defenseChance;
         private int _gold;
         private int _health;
         private int _maxHealth;
-        private int _name;
+        private string _name;
         private int _speed;
 
         public int Attack

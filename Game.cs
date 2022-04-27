@@ -138,6 +138,7 @@ namespace AscII_Game
             {
             DungeonMap.Draw(_mapConsole);
             Player.Draw(_mapConsole, DungeonMap);
+            Player.DrawStats(_statConsole);
             MessageLog.Draw(_messageConsole);
 
             RLConsole.Blit(_mapConsole, 0, 0, _mapWidth, _mapHeight,

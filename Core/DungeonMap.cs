@@ -10,6 +10,13 @@ namespace AscII_Game.Core
 {
     public class DungeonMap : Map
     {
+        public List<Rectangle> Rooms;
+
+        public DungeonMap()
+        {
+            Rooms = new List<Rectangle>();
+        }
+
         public void Draw(RLConsole mapConsole)
         {
             mapConsole.Clear();
@@ -83,6 +90,13 @@ namespace AscII_Game.Core
         {
             Cell cell = (Cell)GetCell(x, y);
             SetCellProperties(cell.X, cell.Y, cell.IsTransparent, isWalkable, cell.IsExplored);
+        }
+
+        public void AddPlayer(Player player)
+        {
+            Game.Player = player;
+            SetIsWalkable(player.X, player.Y, false);
+            UpdatePlayerFieldOfView();
         }
     }
 }

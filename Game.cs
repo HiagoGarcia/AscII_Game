@@ -14,7 +14,10 @@ namespace AscII_Game
         public static CommandSystem CommandSystem { get; private set; }
 
         public static Player Player { get; set; }
+
         public static DungeonMap DungeonMap { get; private set; }
+
+        public static MessageLog MessageLog { get; private set; }
 
         // The screen height and width are in number of tiles
         private static readonly int _screenWidth = 100;
@@ -56,6 +59,11 @@ namespace AscII_Game
             // The title will appear at the top of the console window
             string consoleTitle = $"AscII Game - Level 1 - Seed {seed}";
 
+            //Creating the new message log
+            MessageLog = new MessageLog();
+            MessageLog.Add("The rogue arrives on level 1");
+            MessageLog.Add($"Level created with seed {seed}");
+
             // Tell RLNet to use the bitmap font that we specified and that each tile is 8 x 8 pixels
             _rootConsole = new RLRootConsole(fontFileName, _screenWidth, _screenHeight,
               8, 8, 1f, consoleTitle);
@@ -63,9 +71,6 @@ namespace AscII_Game
             _messageConsole = new RLConsole(_messageWidth, _messageHeight);
             _statConsole = new RLConsole(_statWidth, _statHeight);
             _inventoryConsole = new RLConsole(_inventoryWidth, _inventoryHeight);
-
-            _messageConsole.SetBackColor(0, 0, _messageWidth, _messageHeight, Swatch.DbDeepWater);
-            _messageConsole.Print(1, 1, "Messages", Colors.TextHeading);
 
             _statConsole.SetBackColor(0, 0, _statWidth, _statHeight, Swatch.DbOldStone);
             _statConsole.Print(1, 1, "Stats", Colors.TextHeading);
@@ -77,7 +82,7 @@ namespace AscII_Game
             CommandSystem = new CommandSystem();
 
             //What allows the dungeon to be created
-            MapGenerator mapGenerator = new MapGenerator(_mapWidth, _mapHeight, 20, 13, 7);
+            MapGenerator mapGenerator = new MapGenerator(_mapWidth, _mapHeight, 20, 13, 5);
             DungeonMap = mapGenerator.CreateMap();
             DungeonMap.UpdatePlayerFieldOfView();
 
@@ -133,6 +138,7 @@ namespace AscII_Game
             {
             DungeonMap.Draw(_mapConsole);
             Player.Draw(_mapConsole, DungeonMap);
+            MessageLog.Draw(_messageConsole);
 
             RLConsole.Blit(_mapConsole, 0, 0, _mapWidth, _mapHeight,
               _rootConsole, 0, _statHeight);

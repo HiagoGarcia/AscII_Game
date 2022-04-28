@@ -25,18 +25,35 @@ namespace AscII_Game.Core
         }
 
 
-        public void Draw(RLConsole mapConsole)
+        public void Draw(RLConsole mapConsole, RLConsole statConsole)
         {
-            mapConsole.Clear();
+            // mapConsole.Clear();
             foreach (Cell cell in GetAllCells())
             {
                 SetConsoleSymbolForCell(mapConsole, cell);
             }
 
+            // Keep an index so we know which position to draw monster stats at
+            int i = 0;
+
             foreach (Door door in Doors)
             {
                 door.Draw(mapConsole, this);
             }
+
+            // Iterate through each monster on the map and draw it after drawing the Cells
+            foreach ( Monster monster in _monsters )
+            {
+                monster.Draw(mapConsole, this);
+                // When the monster is in the field-of-view also draw their stats
+                if ( IsInFov (monster.X, monster.Y))
+                {
+                    // Pass in the index to DrawStats and increment it afterwards
+                    monster.DrawStats(statConsole, i);
+                    i++;
+                }
+            }
+
         }
 
         private void SetConsoleSymbolForCell(RLConsole console, Cell cell)
@@ -112,6 +129,7 @@ namespace AscII_Game.Core
             Game.Player = player;
             SetIsWalkable(player.X, player.Y, false);
             UpdatePlayerFieldOfView();
+            Game.SchedulingSystem.Add(player);
         }
 
         public Door GetDoor(int x, int y)
@@ -137,8 +155,10 @@ namespace AscII_Game.Core
             _monsters.Add( monster );
             // After adding the monster to the map make sure to make the cell not walkable
             SetIsWalkable( monster.X, monster.Y, false );
+            Game.SchedulingSystem.Add(monster);
         }
 
+        // Look for a random location in the room that is walkable
         public Point GetRandomWalkableLocationInRoom( Rectangle room )
         {
             if ( DoesRoomHaveWalkableSpace( room ) )
@@ -153,9 +173,24 @@ namespace AscII_Game.Core
                     }
                 }
             }
+            // If we didn't find a walkable lecation in the room return null
             return null;
         }
 
+        public void RemoveMonster ( Monster monster)
+        {
+            _monsters.Remove(monster);
+            // After removing the monster from the map, make sure the cell is walkable again
+            SetIsWalkable( monster.X, monster .Y, true );
+            Game.SchedulingSystem.Remove(monster);
+        }
+
+        public Monster GetMonsterAt( int x, int y)
+        {
+            return _monster.FirstOfDefault(m => m.X == x && m.Y == y);
+        }
+
+        // Iterate through each Cell in the room and return true if any are walkable
         public bool DoesRoomHaveWalkableSpace( Rectangle room)
         {
             for ( int x = 1; x < room.Width; x++ )

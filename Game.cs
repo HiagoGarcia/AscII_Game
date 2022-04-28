@@ -94,6 +94,8 @@ namespace AscII_Game
 
             // Begin RLNET's game loop
             _rootConsole.Run();
+
+            SchedulingSystem = new SchedulingSystem();
         }
 
         // Event handler for RLNET's Update event
@@ -102,31 +104,40 @@ namespace AscII_Game
             bool didPlayerAct = false;
             RLKeyPress keyPress = _rootConsole.Keyboard.GetKeyPress();
 
-            if(keyPress != null)
+            if (CommandSystem.IsPlayerTurn)
             {
-                if(keyPress.Key == RLKey.Up)
+                if (keyPress != null)
                 {
-                    didPlayerAct = CommandSystem.MovePlayer(Direction.Up);
+                    if (keyPress.Key == RLKey.Up)
+                    {
+                        didPlayerAct = CommandSystem.MovePlayer(Direction.Up);
+                    }
+                    else if (keyPress.Key == RLKey.Down)
+                    {
+                        didPlayerAct = CommandSystem.MovePlayer(Direction.Down);
+                    }
+                    else if (keyPress.Key == RLKey.Left)
+                    {
+                        didPlayerAct = CommandSystem.MovePlayer(Direction.Left);
+                    }
+                    else if (keyPress.Key == RLKey.Right)
+                    {
+                        didPlayerAct = CommandSystem.MovePlayer(Direction.Right);
+                    }
+                    else if (keyPress.Key == RLKey.Escape)
+                    {
+                        _rootConsole.Close();
+                    }
                 }
-                else if(keyPress.Key == RLKey.Down)
+                if (didPlayerAct)
                 {
-                    didPlayerAct = CommandSystem.MovePlayer(Direction.Down);
-                }
-                else if(keyPress.Key == RLKey.Left)
-                {
-                    didPlayerAct = CommandSystem.MovePlayer(Direction.Left);
-                }
-                else if(keyPress.Key == RLKey.Right)
-                {
-                    didPlayerAct = CommandSystem.MovePlayer(Direction.Right);
-                }
-                else if(keyPress.Key ==RLKey.Escape)
-                {
-                    _rootConsole.Close();
+                    _renderRequired = true;
+                    CommandSystem.EndPlayerTurn();
                 }
             }
-            if(didPlayerAct)
+            else
             {
+                CommandSystem.ActivateMonsters();
                 _renderRequired = true;
             }
         }
@@ -154,5 +165,7 @@ namespace AscII_Game
             _renderRequired = false;
             }
         }
+
+        public static SchedulingSystem SchedulingSystem { get; private set; }
     }
 }

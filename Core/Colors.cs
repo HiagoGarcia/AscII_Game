@@ -23,5 +23,8 @@ namespace AscII_Game.Core
         public static RLColor Door = Swatch.ComplimentLighter;
         public static RLColor DoorBackgroundFov = Swatch.ComplimentDarker;
         public static RLColor DoorFov = Swatch.ComplimentLightest;
+
+        public static RLColor Text = Swatch.DbLight;
+        public static RLColor Gold = Swatch.DbSun;
     }
 }

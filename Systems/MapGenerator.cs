@@ -19,7 +19,7 @@ namespace AscII_Game.Systems
         
         //Need to set the parameters of the map to make a new map
         public MapGenerator( int width, int height,
-            int maxRooms, int roomMaxSize, int roomMinSize)
+            int maxRooms, int roomMaxSize, int roomMinSize, int mapLevel)
         {
             _width = width;
             _height = height;
@@ -84,6 +84,8 @@ namespace AscII_Game.Systems
                 CreateRoom(room);
                 CreateDoors(room);
             }
+
+            CreateStairs();
 
             PlacePlayer();
 
@@ -179,6 +181,23 @@ namespace AscII_Game.Systems
                 return true;
             }
             return false;
+        }
+
+        //Stairs
+        private void CreateStairs()
+        {
+            _map.StairsUp = new Stairs
+            {
+                X = _map.Rooms.First().Center.X + 1,
+                Y = _map.Rooms.First().Center.Y,
+                IsUp = true
+            };
+            _map.StairsDown = new Stairs
+            {
+                X = _map.Rooms.Last().Center.X,
+                Y = _map.Rooms.Last().Center.Y,
+                IsUp = false
+            };
         }
 
         private void PlacePlayer()

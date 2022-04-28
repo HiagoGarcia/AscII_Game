@@ -46,6 +46,11 @@ namespace AscII_Game
 
         public static IRandom Random { get; private set; }
 
+        public static SchedulingSystem SchedulingSystem { get; private set; }
+
+        private static int _mapLevel = 1;
+
+
 
         public static void Main()
         {
@@ -57,7 +62,7 @@ namespace AscII_Game
             string fontFileName = "terminal8x8.png";
 
             // The title will appear at the top of the console window
-            string consoleTitle = $"AscII Game - Level 1 - Seed {seed}";
+            string consoleTitle = $"AscII Game - Level {_mapLevel} - Seed {seed}";
 
             //Creating the new message log
             MessageLog = new MessageLog();
@@ -82,7 +87,7 @@ namespace AscII_Game
             CommandSystem = new CommandSystem();
 
             //What allows the dungeon to be created
-            MapGenerator mapGenerator = new MapGenerator(_mapWidth, _mapHeight, 20, 13, 5);
+            MapGenerator mapGenerator = new MapGenerator(_mapWidth, _mapHeight, 20, 13, 7, _mapLevel);
             DungeonMap = mapGenerator.CreateMap();
             DungeonMap.UpdatePlayerFieldOfView();
 
@@ -134,6 +139,18 @@ namespace AscII_Game
                     _renderRequired = true;
                     CommandSystem.EndPlayerTurn();
                 }
+                else if(keyPress.Key == RLKey.Period)
+                {
+                    if(DungeonMap.CanMoveDownToNextLevel())
+                    {
+                        MapGenerator mapGenerator = new MapGenerator(_mapWidth, _mapHeight, 20, 13, 7, ++_mapLevel);
+                        DungeonMap = mapGenerator.CreateMap();
+                        MessageLog = new MessageLog();
+                        CommandSystem = new CommandSystem();
+                        _rootConsole.Title = $"AscII Game - Level {_mapLevel}";
+                        didPlayerAct = true;
+                    }
+                }
             }
             else
             {
@@ -149,6 +166,7 @@ namespace AscII_Game
             {
             DungeonMap.Draw(_mapConsole);
             Player.Draw(_mapConsole, DungeonMap);
+            Player.DrawStats(_statConsole);
             MessageLog.Draw(_messageConsole);
 
             RLConsole.Blit(_mapConsole, 0, 0, _mapWidth, _mapHeight,

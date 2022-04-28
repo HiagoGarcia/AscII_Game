@@ -26,6 +26,7 @@ namespace AscII_Game.Monsters
                 Speed = 14,
                 Symbol = 'k'
             };
+
         }
     }
 }

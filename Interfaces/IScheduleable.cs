@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace AscII_Game.Interfaces
 {
-	public interface IScheduleable
-	{
-	int Time { get; }
-	}
+    public interface IScheduleable
+    {
+        int Time { get; }
+    }
 }

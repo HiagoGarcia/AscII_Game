@@ -9,13 +9,12 @@ namespace AscII_Game.Core
         private int _attack;
         private int _attackChance;
         private int _awareness;
-        private int _awarenessDefense;
         private int _defense;
         private int _defenseChance;
         private int _gold;
         private int _health;
         private int _maxHealth;
-        private int _name;
+        private string _name;
         private int _speed;
 
         public int Attack

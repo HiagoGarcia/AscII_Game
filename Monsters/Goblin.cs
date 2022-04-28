@@ -11,7 +11,7 @@ namespace AscII_Game.Monsters
     {
         public static Goblin Create(int level)
         {
-
+            return null;
         }
     }
 }

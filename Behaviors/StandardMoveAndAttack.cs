@@ -1,13 +1,12 @@
 ﻿using AscII_Game.Core;
-using System;
-using System.Collections.Generic;
+using AscII_Game.Interfaces;
+using AscII_Game.Systems;
+using RogueSharp;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AscII_Game.Behavior
 {
-	public class StandardMoveAttack : IBehavior
+    public class StandardMoveAndAttack : IBehavior
 	{
 		public bool Act(Monster monster, CommandSystem commandSystem)
 		{
@@ -21,11 +20,11 @@ namespace AscII_Game.Behavior
 			// Add a message to the MessageLof regarding this alerted status
 			if (!monster.TurnsAlerted.HasValue)
 			{
-				monsterFoV.ComputeFoV(monster.X, monster.Y, monster.Awareness, true);
-				if (monsterFoV.IsInFoV(player.X, player.Y))
+				monsterFov.ComputeFov(monster.X, monster.Y, monster.Awareness, true);
+				if (monsterFov.IsInFov(player.X, player.Y))
 				{
 					Game.MessageLog.Add($"{monster.Name} is eager to fight {player.Name}");
-					monster.turnsAlerted = 1;
+					monster.TurnsAlerted = 1;
 				}
 			}
 
@@ -35,7 +34,7 @@ namespace AscII_Game.Behavior
 				dungeonMap.SetIsWalkable(monster.X, monster.Y, true);
 				dungeonMap.SetIsWalkable(player.X, player.Y, true);
 
-				Pathfinder pathfinder = new Pathfinder(dungeonMap);
+				PathFinder pathfinder = new PathFinder(dungeonMap);
 				Path path = null;
 
 				try

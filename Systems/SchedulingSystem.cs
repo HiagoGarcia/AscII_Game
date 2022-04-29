@@ -1,9 +1,6 @@
-﻿using AscII_Game.Core;
-using System;
+﻿using AscII_Game.Interfaces;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AscII_Game.Systems
 {
@@ -15,7 +12,7 @@ namespace AscII_Game.Systems
         public SchedulingSystem()
         {
             _time = 0;
-			_scheduldeables = new SortedDictionary<int, List<IScheduleable>>();
+			_scheduleables = new SortedDictionary<int, List<IScheduleable>>();
         }
 
 		// Add a new object to the schedule
@@ -25,7 +22,7 @@ namespace AscII_Game.Systems
             int key = _time + scheduleable.Time;
 			if (!_scheduleables.ContainsKey(key))
             {
-				_scheduleables.Add(key, new List<ISchedulable>());
+				_scheduleables.Add(key, new List<IScheduleable>());
             }
             _scheduleables[key].Add(scheduleable);
         }
@@ -59,8 +56,8 @@ namespace AscII_Game.Systems
         public IScheduleable Get()
         {
             var firstScheduleableGroup = _scheduleables.First();
-			var firstSchedulable = firstScheduleableGroup.Value.First();
-			Remove(firstSchedulable);
+			var firstScheduleable = firstScheduleableGroup.Value.First();
+			Remove(firstScheduleable);
             _time = firstScheduleableGroup.Key;
             return firstScheduleable;
         }

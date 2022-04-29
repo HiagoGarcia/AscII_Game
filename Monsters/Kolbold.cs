@@ -1,4 +1,5 @@
 ﻿using AscII_Game.Core;
+using RogueSharp.DiceNotation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,11 +18,12 @@ namespace AscII_Game.Monsters
                 Attack = Dice.Roll("1D3") + level / 3,
                 AttackChance = Dice.Roll("25D3"),
                 Awareness = 10,
-                Color = Color.KoboldColor,
+                Color = Colors.KolboldColor,
                 Defense = Dice.Roll("1D3") + level / 3,
                 DefenseChance = Dice.Roll("10D4"),
                 Gold = Dice.Roll("5D5"),
                 Health = health,
+                MaxHealth = health,
                 Name = "Kobold",
                 Speed = 14,
                 Symbol = 'k'

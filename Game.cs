@@ -6,10 +6,9 @@ using System;
 
 namespace AscII_Game
 {
-    public class Game
+    public static class Game
     {
         //Allows access to the dungeon generator
-        private static bool _renderRequired = true;
 
         public static CommandSystem CommandSystem { get; private set; }
 
@@ -49,7 +48,7 @@ namespace AscII_Game
         public static SchedulingSystem SchedulingSystem { get; private set; }
 
         private static int _mapLevel = 1;
-
+        private static bool _renderRequired = true;
 
 
         public static void Main()
@@ -69,6 +68,12 @@ namespace AscII_Game
             MessageLog.Add("The rogue arrives on level 1");
             MessageLog.Add($"Level created with seed {seed}");
 
+            Player = new Player();
+            SchedulingSystem = new SchedulingSystem();
+
+            MapGenerator mapGenerator = new MapGenerator(_mapWidth, _mapHeight, 20, 13, 7, _mapLevel);
+            DungeonMap = mapGenerator.CreateMap();
+
             // Tell RLNet to use the bitmap font that we specified and that each tile is 8 x 8 pixels
             _rootConsole = new RLRootConsole(fontFileName, _screenWidth, _screenHeight,
               8, 8, 1f, consoleTitle);
@@ -77,6 +82,8 @@ namespace AscII_Game
             _statConsole = new RLConsole(_statWidth, _statHeight);
             _inventoryConsole = new RLConsole(_inventoryWidth, _inventoryHeight);
 
+            CommandSystem = new CommandSystem();
+
             _statConsole.SetBackColor(0, 0, _statWidth, _statHeight, Swatch.DbOldStone);
             _statConsole.Print(1, 1, "Stats", Colors.TextHeading);
 
@@ -84,11 +91,8 @@ namespace AscII_Game
             _inventoryConsole.Print(1, 1, "Inventory", Colors.TextHeading);
 
 
-            CommandSystem = new CommandSystem();
 
             //What allows the dungeon to be created
-            MapGenerator mapGenerator = new MapGenerator(_mapWidth, _mapHeight, 20, 13, 7, _mapLevel);
-            DungeonMap = mapGenerator.CreateMap();
             DungeonMap.UpdatePlayerFieldOfView();
 
             // Set up a handler for RLNET's Update event
@@ -100,7 +104,6 @@ namespace AscII_Game
             // Begin RLNET's game loop
             _rootConsole.Run();
 
-            SchedulingSystem = new SchedulingSystem();
         }
 
         // Event handler for RLNET's Update event
@@ -133,23 +136,23 @@ namespace AscII_Game
                     {
                         _rootConsole.Close();
                     }
-                }
-                if (didPlayerAct)
-                {
-                    _renderRequired = true;
-                    CommandSystem.EndPlayerTurn();
-                }
-                else if(keyPress.Key == RLKey.Period)
-                {
-                    if(DungeonMap.CanMoveDownToNextLevel())
+                    else if (keyPress.Key == RLKey.Period)
                     {
+                        if (DungeonMap.CanMoveDownToNextLevel())
+                        {   
                         MapGenerator mapGenerator = new MapGenerator(_mapWidth, _mapHeight, 20, 13, 7, ++_mapLevel);
                         DungeonMap = mapGenerator.CreateMap();
                         MessageLog = new MessageLog();
                         CommandSystem = new CommandSystem();
                         _rootConsole.Title = $"AscII Game - Level {_mapLevel}";
                         didPlayerAct = true;
+                        }
                     }
+                }
+                if (didPlayerAct)
+                {
+                    _renderRequired = true;
+                    CommandSystem.EndPlayerTurn();
                 }
             }
             else
@@ -164,7 +167,7 @@ namespace AscII_Game
         {
             if(_renderRequired)
             {
-            DungeonMap.Draw(_mapConsole);
+            DungeonMap.Draw(_mapConsole, _statConsole);
             Player.Draw(_mapConsole, DungeonMap);
             Player.DrawStats(_statConsole);
             MessageLog.Draw(_messageConsole);
@@ -184,6 +187,6 @@ namespace AscII_Game
             }
         }
 
-        public static SchedulingSystem SchedulingSystem { get; private set; }
+ 
     }
 }

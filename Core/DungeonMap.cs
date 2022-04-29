@@ -8,26 +8,27 @@ using System.Threading.Tasks;
 
 namespace AscII_Game.Core
 {
-    private readonly List<Monster> _monsters;
 
     public class DungeonMap : Map
     {
-        public List<Rectangle> Rooms { get; set; }
-        public List<Door> Doors { get; set; }
-        public Stairs StairsUp { get; set; }
-        public Stairs StairsDown { get; set; }
+        public List<Rectangle> Rooms;
+        public List<Door> Doors;
+        public Stairs StairsUp;
+        public Stairs StairsDown;
+        private readonly List<Monster> _monsters;
 
 
         public DungeonMap()
         {
-            //Game.SchedulingSystem.Clear();
+            _monsters = new List<Monster>();
+
+            Game.SchedulingSystem.Clear();
 
             Rooms = new List<Rectangle>();
 
             Doors = new List<Door>();
 
 
-            _monsters = new List<Monster>();
         }
 
 
@@ -171,23 +172,30 @@ namespace AscII_Game.Core
             Game.SchedulingSystem.Add(monster);
         }
 
-        // Look for a random location in the room that is walkable
-        public Point GetRandomWalkableLocationInRoom( Rectangle room )
+        public Point GetRandomLocation()
         {
-            if ( DoesRoomHaveWalkableSpace( room ) )
+            int roomNumber = Game.Random.Next( 0, Rooms.Count - 1);
+            Rectangle randomRoom = Rooms[roomNumber];
+
+            if(!DoesRoomHaveWalkableSpace(randomRoom));
             {
-                for ( int i = 0; i < 100; i++ )
-                {
-                    int x = Game.Random.Next( 1, room.Width - 2) + room.X;
-                    int y = Game.Random.Next( 1, room.Height - 2) + room.Y;
-                    if ( SetIsWalkable( x, y ) )
-                    {
-                        return new Point(x, y);
-                    }
-                }
+                GetRandomLocation();
             }
-            // If we didn't find a walkable lecation in the room return null
-            return null;
+
+            return GetRandomLocationInRoom(randomRoom);
+        }
+
+        // Look for a random location in the room that is walkable
+        public Point GetRandomLocationInRoom( Rectangle room )
+        {
+            int x = Game.Random.Next( 1, room.Width - 2) + room.X;
+            int y = Game.Random.Next( 1, room.Height - 2) + room.Y;
+            if ( !IsWalkable( x, y ) )
+            {
+                GetRandomLocationInRoom(room);
+            }
+            return new Point(x, y);
+                
         }
 
         public void RemoveMonster ( Monster monster)
@@ -200,7 +208,7 @@ namespace AscII_Game.Core
 
         public Monster GetMonsterAt( int x, int y)
         {
-            return _monster.FirstOfDefault(m => m.X == x && m.Y == y);
+            return _monsters.FirstOrDefault(m => m.X == x && m.Y == y);
         }
 
         // Iterate through each Cell in the room and return true if any are walkable
@@ -210,7 +218,7 @@ namespace AscII_Game.Core
             {
                 for ( int y = 1; y < room.Height; y++ )
                 {
-                    if ( SetIsWalkable( x + room.X, y + room.Y ) )
+                    if ( IsWalkable( x + room.X, y + room.Y ) )
                     {
                         return true;
                     }
@@ -219,23 +227,6 @@ namespace AscII_Game.Core
             return false;
         }
 
-        public Door GetDoor( int x, int y)
-        {
-            return Doors.SingleOrDefault( d => d.X == x && d.Y == y );
-        }
-
-        private void OpenDoor(Actor actor, int x, int y)
-        {
-            Door door = GetDoor(x, y);
-            if(door != null && !door.IsOpen)
-            {
-                door.IsOpen = true;
-                var cell = GetCell(x, y);
-                SetCellProperties(x, y, true, cell.IsWalkable, cell.IsExplored);
-
-                Game.MessageLog.Add($"{actor.Name} opened a door");
-            }
-        }
 
         public bool CanMoveDownToNextLevel()
         {

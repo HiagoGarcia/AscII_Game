@@ -1,14 +1,14 @@
 ﻿using AscII_Game.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using AscII_Game.Interfaces;
+using RogueSharp;
+using RogueSharp.DiceNotation;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace AscII_Game.Systems
 {
     public class CommandSystem
     {
+        public bool IsPlayerTurn { get; set; }
         public bool MovePlayer( Direction direction)
         {
             int x = Game.Player.X;
@@ -50,12 +50,32 @@ namespace AscII_Game.Systems
             Monster monster = Game.DungeonMap.GetMonsterAt(x, y);
             if(monster != null)
             {
-                Atack(Game.Player, monster);
+                Attack(Game.Player, monster);
                 return true;
             }
 
             return false;
         }
+        public void ActivateMonsters()
+        {
+            IScheduleable scheduleable = Game.SchedulingSystem.Get();
+            if (scheduleable is Player)
+            {
+                IsPlayerTurn = true;
+                Game.SchedulingSystem.Add(Game.Player);
+            }
+            else
+            {
+                if (scheduleable is Monster monster)
+                {
+                    monster.PerformAction(this);
+                    Game.SchedulingSystem.Add(monster);
+                }
+
+                ActivateMonsters();
+            }
+        }
+
 
         public void Attack(Actor attacker, Actor defender)
         {
@@ -64,7 +84,7 @@ namespace AscII_Game.Systems
 
             int hits = ResolveAttack(attacker, defender, attackMessage);
 
-            int blocks = ResolveAttack(attacker, defender, defenseMessage);
+            int blocks = ResolveDefense(defender, hits, attackMessage, defenseMessage);
 
             Game.MessageLog.Add(attackMessage.ToString());
             if (!string.IsNullOrWhiteSpace(defenseMessage.ToString()))
@@ -92,7 +112,7 @@ namespace AscII_Game.Systems
             {
                 attackMessage.Append(termResult.Value + ", ");
                 // Compare the value to 100 minus the attack chance and add a hit if it's greater
-                if (termResult.Value >= 100 attacker.AttackChance)
+                if (termResult.Value >= 100 - attacker.AttackChance)
                 {
                     hits++;
                 }
@@ -140,7 +160,7 @@ namespace AscII_Game.Systems
         {
             if (damage > 0)
             {
-                defender.Health = defender.Health - damage;
+                defender.Health -= damage;
 
                 Game.MessageLog.Add($" {defender.Name} was hot for {damage} damage");
 
@@ -156,51 +176,29 @@ namespace AscII_Game.Systems
         }
 
         // Remove the defender from the map add some messages upon death.
-        private static void ResolveDeath(Actor actor)
+        private static void ResolveDeath(Actor defender)
         {
             if (defender is Player)
             {
-                Game.MessageLog.add($" {defender.Name} was killed, GAME OVER MAN!");
+                Game.MessageLog.Add($" {defender.Name} was killed, GAME OVER MAN!");
             }
-            else if (defender is Monster)
+            else if (defender is Monster monster)
             {
-                Game.DungeonMap.RemoveMonster((Monster)defender);
+                Game.DungeonMap.RemoveMonster(monster);
 
                 Game.MessageLog.Add($" {defender.Name} died and dropped {defender.Gold} gold");
             }
         }
 
-        public bool IsPlayerTurn { get; set; }
 
         public void EndPlayerTurn()
         {
             IsPlayerTurn = false;
         }
 
-        public void ActivateMonsters()
-        {
-            IScheduleable scheduleable = Game.SchedulingSystem.Get();
-            if (scheduleable is IsPlayerTurn)
+            public void MoveMonster(Monster monster, ICell cell)
             {
-                IsPlayerTurn = true;
-                Game.SchedulingSystem.Add(Game.Player);
-            }
-            else
-            {
-                Monster monster = scheduleable as monster;
-
-                if (monster != null)
-                {
-                    monster.PerformAction(this);
-                    Game.SchedulingSystem.Add(monster);
-                }
-
-                ActivateMonsters();
-            }
-
-            public void MoveMonster(Monster monster, Cell cell)
-            {
-                if (!Game.DungeonMap.SetActorPosition(monster, cell.X, cell.Y))
+                if (!Game.DungeonMap.SetActorPostion(monster, cell.X, cell.Y))
                 {
                     if (Game.Player.X == cell.X && Game.Player.Y == cell.Y)
                     {
@@ -208,6 +206,6 @@ namespace AscII_Game.Systems
                     }
                 }
             }
-        }
+        
     }
 }

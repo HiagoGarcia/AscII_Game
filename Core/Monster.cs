@@ -1,8 +1,12 @@
-﻿using System;
+﻿using AscII_Game.Systems;
+using AscII_Game.Interfaces;
+using RLNET;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AscII_Game.Behavior;
 
 namespace AscII_Game.Core
 {
@@ -15,15 +19,15 @@ namespace AscII_Game.Core
             int yPosition = 13 + (position * 2);
 
             // Begin the line by printing the symbol of the monster in the appropriate color
-            statConsole.Print(1, yPosition, Symbol.ToString(), color);
+            statConsole.Print(1, yPosition, Symbol.ToString(), Color);
 
             // Figure out the width of the health bar by dividing current health by max health
             int width = Convert.ToInt32(((double)Health / (double)MaxHealth) * 16.0);
             int remainingWidth = 16 - width;
 
             // Set the background colors of the health bar to show how damaged the monster is
-            statConsole.SetBackColor(3, yPosition, width, 1, Swat.Primary);
-            statConsole.SetBackColor(3, width, yPosition, remainingWidth, 1, Swat.PrimaryDarkest);
+            statConsole.SetBackColor(3, yPosition, width, 1, Swatch.Primary);
+            statConsole.SetBackColor(3 + width, yPosition, remainingWidth, 1, Swatch.PrimaryDarkest);
 
             // Print the monsters name over top of the health bar
             statConsole.Print(2, yPosition, $": {Name}", Swatch.DbLight);

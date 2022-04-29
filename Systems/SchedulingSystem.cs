@@ -1,4 +1,4 @@
-﻿using AscII_Game.Interfaces;
+﻿using AscII_Game.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,21 +15,23 @@ namespace AscII_Game.Systems
         public SchedulingSystem()
         {
             _time = 0;
-            _scheduleables = new SortedDictionary<int, List<IScheduleable>>();
+			_scheduldeables = new SortedDictionary<int, List<IScheduleable>>();
         }
 
-        //Add something to the schedule
+		// Add a new object to the schedule
+		// Place it at the current time plus the object's Time property.
         public void Add(IScheduleable scheduleable)
         {
             int key = _time + scheduleable.Time;
-            if(!_scheduleables.ContainsKey(key))
+			if (!_scheduleables.ContainsKey(key))
             {
-                _scheduleables.Add(key, new List<IScheduleable>());
+				_scheduleables.Add(key, new List<ISchedulable>());
             }
             _scheduleables[key].Add(scheduleable);
         }
 
-        //Removes something from the schedule
+		// Remove a specific object from the schedule.
+		// Useful for when a monster is killed to remove it before it's action comes up again.
         public void Remove(IScheduleable scheduleable)
         {
             KeyValuePair<int, List<IScheduleable>> scheduleableListFound
@@ -43,30 +45,33 @@ namespace AscII_Game.Systems
                     break;
                 }
             }
-            if(scheduleableListFound.Value != null)
+			if (scheduleableListFound.Value != null)
             {
                 scheduleableListFound.Value.Remove(scheduleable);
-                if(scheduleableListFound.Value.Count <= 0)
+				if (scheduleableListFound.Value.Count <= 0)
                 {
                     _scheduleables.Remove(scheduleableListFound.Key);
                 }
             }
         }
 
+		// Get the next object whose turn it is from the schedule. Advance time if necessary
         public IScheduleable Get()
         {
             var firstScheduleableGroup = _scheduleables.First();
-            var firstScheduleable = firstScheduleableGroup.Value.First();
-            Remove(firstScheduleable);
+			var firstSchedulable = firstScheduleableGroup.Value.First();
+			Remove(firstSchedulable);
             _time = firstScheduleableGroup.Key;
             return firstScheduleable;
         }
 
+		// Reset the time and clear out the schedule
         public int GetTime()
         {
             return _time;
         }
 
+		//Reset the timeand clear out the schedule
         public void Clear()
         {
             _time = 0;

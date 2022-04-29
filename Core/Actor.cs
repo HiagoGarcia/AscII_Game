@@ -4,8 +4,8 @@ using RogueSharp;
 
 namespace AscII_Game.Core
 {
-    public class Actor : IActor, IDrawable
-        {
+    public class Actor : IActor, IDrawable, IScheduleable
+    { 
         private int _attack;
         private int _attackChance;
         private int _awareness;
@@ -113,6 +113,14 @@ namespace AscII_Game.Core
             else
             {
                 console.Set(X, Y, Colors.Floor, Colors.FloorBackground, '.');
+            }
+        }
+
+        public int Time
+        {
+            get
+            {
+                return Speed;
             }
         }
     }
